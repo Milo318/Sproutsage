@@ -52,7 +52,10 @@ const IssueIdentifier: React.FC = () => {
           <p className="text-gray-500 mb-8 max-w-sm mx-auto">Upload a photo of spots, discoloration, or pests on your plant for a professional diagnosis and treatment plan.</p>
           
           <button 
-            onClick={() => fileInputRef.current?.click()}
+            onClick={() => {
+              if (fileInputRef.current) fileInputRef.current.value = '';
+              fileInputRef.current?.click();
+            }}
             className="bg-rose-600 text-white px-8 py-4 rounded-2xl font-bold shadow-lg shadow-rose-200 hover:bg-rose-700 transition-all active:scale-95 flex items-center gap-2 mx-auto"
           >
             <i className="fa-solid fa-file-medical"></i>

@@ -10,7 +10,7 @@ export const analyzePlantImage = async (base64Image: string): Promise<PlantCareI
   const prompt = "Identify this plant and provide detailed care instructions. Return the data in the specified JSON format. For wateringFrequencyDays, provide an integer representing the average number of days between waterings (e.g., 3 for every 3 days, 7 for weekly).";
   
   const response = await ai.models.generateContent({
-    model: 'gemini-3-pro-preview',
+    model: 'gemini-2.0-flash',
     contents: {
       parts: [
         {
@@ -62,7 +62,7 @@ export const analyzePlantIssue = async (base64Image: string): Promise<PlantIssue
   const prompt = "Analyze this plant image for pests, diseases, or deficiencies. Identify the issue and provide organic and chemical treatment options. Return the data in the specified JSON format.";
   
   const response = await ai.models.generateContent({
-    model: 'gemini-3-pro-preview',
+    model: 'gemini-2.0-flash',
     contents: {
       parts: [
         {
@@ -111,7 +111,7 @@ export const analyzePlantIssue = async (base64Image: string): Promise<PlantIssue
 export const createGardeningChat = () => {
   const ai = new GoogleGenAI({ apiKey: API_KEY });
   return ai.chats.create({
-    model: 'gemini-3-pro-preview',
+    model: 'gemini-2.0-flash',
     config: {
       systemInstruction: "You are SproutSage, a world-class gardening expert. You help users with plant care, landscaping advice, pest control, and soil health. Your tone is friendly, encouraging, and scientific yet accessible. Use markdown for formatting. Keep responses focused on gardening. When appropriate, use Google Search to provide up-to-date information on seasonal advice, local pests, or trending gardening news.",
       tools: [{ googleSearch: {} }]

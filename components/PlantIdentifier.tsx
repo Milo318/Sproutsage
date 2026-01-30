@@ -59,7 +59,10 @@ const PlantIdentifier: React.FC<PlantIdentifierProps> = ({ onPlantSaved, savedPl
           <p className="text-gray-500 mb-8 max-w-sm mx-auto">Upload a clear photo of leaves, flowers, or fruit to get instant identification and care advice.</p>
           
           <button 
-            onClick={() => fileInputRef.current?.click()}
+            onClick={() => {
+              if (fileInputRef.current) fileInputRef.current.value = '';
+              fileInputRef.current?.click();
+            }}
             className="bg-emerald-600 text-white px-8 py-4 rounded-2xl font-bold shadow-lg shadow-emerald-200 hover:bg-emerald-700 transition-all active:scale-95 flex items-center gap-2 mx-auto"
           >
             <i className="fa-solid fa-cloud-arrow-up"></i>

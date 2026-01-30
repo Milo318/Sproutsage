@@ -11,22 +11,16 @@ import RemindersOverlay from './components/RemindersOverlay';
 
 const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<AppTab>(AppTab.IDENTIFY);
-  const [savedPlants, setSavedPlants] = useState<SavedPlant[]>([]);
-  const [journalEntries, setJournalEntries] = useState<JournalEntry[]>([]);
+  const [savedPlants, setSavedPlants] = useState<SavedPlant[]>(() => {
+    const stored = localStorage.getItem('sproutsage_garden');
+    return stored ? JSON.parse(stored) : [];
+  });
+  const [journalEntries, setJournalEntries] = useState<JournalEntry[]>(() => {
+    const stored = localStorage.getItem('sproutsage_journal');
+    return stored ? JSON.parse(stored) : [];
+  });
   const [selectedPlant, setSelectedPlant] = useState<{ info: PlantCareInfo, imageUrl: string, nickname?: string } | null>(null);
   const [showReminders, setShowReminders] = useState(false);
-
-  // Persistence
-  useEffect(() => {
-    const storedGarden = localStorage.getItem('sproutsage_garden');
-    if (storedGarden) {
-      setSavedPlants(JSON.parse(storedGarden));
-    }
-    const storedJournal = localStorage.getItem('sproutsage_journal');
-    if (storedJournal) {
-      setJournalEntries(JSON.parse(storedJournal));
-    }
-  }, []);
 
   useEffect(() => {
     localStorage.setItem('sproutsage_garden', JSON.stringify(savedPlants));
