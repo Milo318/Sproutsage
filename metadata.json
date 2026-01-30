@@ -1,0 +1,7 @@
+{
+  "name": "SproutSage: AI Gardening Assistant",
+  "description": "An intelligent gardening companion that identifies plants via photos and provides personalized care instructions, featuring an expert AI chatbot for all your horticultural questions.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}

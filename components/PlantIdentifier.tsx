@@ -1,0 +1,130 @@
+
+import React, { useState, useRef } from 'react';
+import { analyzePlantImage } from '../services/geminiService';
+import { PlantCareInfo } from '../types';
+import PlantCareCard from './PlantCareCard';
+
+interface PlantIdentifierProps {
+  onPlantSaved: (plant: PlantCareInfo, imageUrl: string, nickname: string) => void;
+  savedPlants: { commonName: string }[];
+}
+
+const PlantIdentifier: React.FC<PlantIdentifierProps> = ({ onPlantSaved, savedPlants }) => {
+  const [image, setImage] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [result, setResult] = useState<PlantCareInfo | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const base64 = event.target?.result as string;
+        setImage(base64);
+        setResult(null);
+        setError(null);
+        processImage(base64);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const processImage = async (base64: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const base64Data = base64.split(',')[1];
+      const info = await analyzePlantImage(base64Data);
+      setResult(info);
+    } catch (err: any) {
+      setError("I couldn't identify this plant. Please try another photo.");
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const isAlreadySaved = result ? savedPlants.some(p => p.commonName === result.commonName) : false;
+
+  return (
+    <div className="max-w-4xl mx-auto px-4 py-8">
+      {!image && !result && (
+        <div className="text-center py-20 bg-white rounded-3xl border-2 border-dashed border-emerald-200">
+          <div className="w-24 h-24 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-6">
+            <i className="fa-solid fa-camera text-emerald-500 text-4xl"></i>
+          </div>
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">Identify Any Plant</h2>
+          <p className="text-gray-500 mb-8 max-w-sm mx-auto">Upload a clear photo of leaves, flowers, or fruit to get instant identification and care advice.</p>
+          
+          <button 
+            onClick={() => fileInputRef.current?.click()}
+            className="bg-emerald-600 text-white px-8 py-4 rounded-2xl font-bold shadow-lg shadow-emerald-200 hover:bg-emerald-700 transition-all active:scale-95 flex items-center gap-2 mx-auto"
+          >
+            <i className="fa-solid fa-cloud-arrow-up"></i>
+            Upload Plant Photo
+          </button>
+          <input 
+            type="file" 
+            ref={fileInputRef} 
+            onChange={handleFileChange} 
+            accept="image/*" 
+            className="hidden" 
+          />
+        </div>
+      )}
+
+      {loading && (
+        <div className="text-center py-20">
+          <div className="relative w-24 h-24 mx-auto mb-6">
+            <div className="absolute inset-0 border-4 border-emerald-100 rounded-full"></div>
+            <div className="absolute inset-0 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+            <div className="absolute inset-0 flex items-center justify-center">
+               <i className="fa-solid fa-leaf text-emerald-500 animate-pulse"></i>
+            </div>
+          </div>
+          <h2 className="text-xl font-bold text-gray-800">SproutSage is thinking...</h2>
+          <p className="text-gray-500">Analyzing biological markers and matching botanical patterns...</p>
+        </div>
+      )}
+
+      {error && (
+        <div className="bg-red-50 p-6 rounded-2xl text-center mb-8 border border-red-100">
+          <i className="fa-solid fa-circle-exclamation text-red-500 text-3xl mb-4"></i>
+          <p className="text-red-800 font-medium mb-4">{error}</p>
+          <button 
+            onClick={() => { setImage(null); setResult(null); setError(null); }}
+            className="text-emerald-700 font-bold hover:underline"
+          >
+            Try Again
+          </button>
+        </div>
+      )}
+
+      {result && image && !loading && (
+        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <div className="flex justify-between items-center bg-emerald-50 p-4 rounded-2xl">
+             <button 
+               onClick={() => { setImage(null); setResult(null); }}
+               className="text-emerald-700 font-bold text-sm flex items-center gap-2"
+             >
+               <i className="fa-solid fa-arrow-left"></i>
+               Back to Camera
+             </button>
+             <span className="text-xs font-bold text-emerald-600 bg-white px-3 py-1 rounded-full uppercase tracking-wider">Analysis Complete</span>
+          </div>
+
+          <PlantCareCard 
+            plant={result} 
+            imageUrl={image} 
+            onSave={(nickname) => onPlantSaved(result, image, nickname)}
+            isSaved={isAlreadySaved}
+          />
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default PlantIdentifier;
