@@ -4,13 +4,27 @@ export interface PlantCareInfo {
   scientificName: string;
   description: string;
   watering: string;
-  wateringFrequencyDays: number; // Structured field for reminders
+  wateringFrequencyDays: number;
   light: string;
   temperature: string;
   soil: string;
   fertilizer: string;
   pests: string[];
   funFact: string;
+  difficulty: 'Easy' | 'Moderate' | 'Expert';
+  toxicity: {
+    toxicToPets: boolean;
+    toxicToHumans: boolean;
+    details: string;
+  };
+  seasonalCare: {
+    spring: string;
+    summer: string;
+    fall: string;
+    winter: string;
+  };
+  propagation: string;
+  commonVarieties: string[];
 }
 
 export interface PlantIssueInfo {
@@ -27,7 +41,7 @@ export interface PlantIssueInfo {
 export interface JournalEntry {
   id: string;
   plantName: string;
-  date: string; // ISO string for storage
+  date: string;
   note: string;
   imageUrl?: string;
   category: 'Growth' | 'Watering' | 'Issue' | 'Observation';
@@ -37,8 +51,9 @@ export interface SavedPlant {
   id: string;
   info: PlantCareInfo;
   imageUrl: string;
-  lastWatered: string; // ISO string
+  lastWatered: string;
   nickname?: string;
+  dateAdded: string;
 }
 
 export interface GroundingSource {
@@ -55,6 +70,7 @@ export interface ChatMessage {
 }
 
 export enum AppTab {
+  HOME = 'home',
   IDENTIFY = 'identify',
   DIAGNOSE = 'diagnose',
   JOURNAL = 'journal',

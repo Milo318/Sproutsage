@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { AppTab, PlantCareInfo, JournalEntry, SavedPlant } from './types';
+import LandingPage from './components/LandingPage';
 import PlantIdentifier from './components/PlantIdentifier';
 import IssueIdentifier from './components/IssueIdentifier';
 import ChatBot from './components/ChatBot';
@@ -10,13 +11,12 @@ import JournalView from './components/JournalView';
 import RemindersOverlay from './components/RemindersOverlay';
 
 const App: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<AppTab>(AppTab.IDENTIFY);
+  const [activeTab, setActiveTab] = useState<AppTab>(AppTab.HOME);
   const [savedPlants, setSavedPlants] = useState<SavedPlant[]>([]);
   const [journalEntries, setJournalEntries] = useState<JournalEntry[]>([]);
   const [selectedPlant, setSelectedPlant] = useState<{ info: PlantCareInfo, imageUrl: string, nickname?: string } | null>(null);
   const [showReminders, setShowReminders] = useState(false);
 
-  // Persistence
   useEffect(() => {
     const storedGarden = localStorage.getItem('sproutsage_garden');
     if (storedGarden) {
@@ -42,6 +42,7 @@ const App: React.FC = () => {
       imageUrl,
       id: Date.now().toString(),
       lastWatered: new Date().toISOString(),
+      dateAdded: new Date().toISOString(),
       nickname: nickname.trim() || undefined
     };
     setSavedPlants(prev => [...prev, newEntry]);
@@ -56,7 +57,6 @@ const App: React.FC = () => {
     const now = new Date().toISOString();
     setSavedPlants(prev => prev.map(p => p.id === id ? { ...p, lastWatered: now } : p));
     
-    // Also log to journal automatically
     const plant = savedPlants.find(p => p.id === id);
     if (plant) {
       const displayName = plant.nickname || plant.info.commonName;
@@ -91,6 +91,14 @@ const App: React.FC = () => {
   const duePlants = savedPlants.filter(isWaterDue);
   const plantNames = savedPlants.map(p => p.nickname || p.info.commonName);
 
+  const navItems = [
+    { id: AppTab.IDENTIFY, label: 'Identify', icon: 'fa-camera' },
+    { id: AppTab.DIAGNOSE, label: 'Diagnose', icon: 'fa-stethoscope' },
+    { id: AppTab.JOURNAL, label: 'Journal', icon: 'fa-book-open' },
+    { id: AppTab.MY_GARDEN, label: 'My Garden', icon: 'fa-seedling' },
+    { id: AppTab.CHAT, label: 'Expert Chat', icon: 'fa-comment-dots' },
+  ];
+
   return (
     <div className="min-h-screen bg-[#f8fafc] flex flex-col pb-24 md:pb-0 md:pt-20">
       {showReminders && (
@@ -104,21 +112,18 @@ const App: React.FC = () => {
       {/* Desktop Header */}
       <header className="fixed top-0 left-0 right-0 bg-white/80 backdrop-blur-xl z-50 border-b border-emerald-50 hidden md:block">
         <div className="max-w-6xl mx-auto px-6 h-20 flex items-center justify-between">
-          <div className="flex items-center gap-2">
+          <button 
+            onClick={() => { setActiveTab(AppTab.HOME); setSelectedPlant(null); }}
+            className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+          >
             <div className="w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-200">
               <i className="fa-solid fa-leaf text-white text-xl"></i>
             </div>
             <h1 className="text-2xl font-extrabold text-emerald-900 tracking-tight">SproutSage</h1>
-          </div>
+          </button>
           
           <nav className="flex items-center gap-1 bg-gray-100/50 p-1 rounded-2xl">
-            {[
-              { id: AppTab.IDENTIFY, label: 'Identify', icon: 'fa-camera' },
-              { id: AppTab.DIAGNOSE, label: 'Diagnose', icon: 'fa-stethoscope' },
-              { id: AppTab.JOURNAL, label: 'Journal', icon: 'fa-book-open' },
-              { id: AppTab.MY_GARDEN, label: 'My Garden', icon: 'fa-seedling' },
-              { id: AppTab.CHAT, label: 'Expert Chat', icon: 'fa-comment-dots' },
-            ].map((tab) => (
+            {navItems.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => { setActiveTab(tab.id); setSelectedPlant(null); }}
@@ -134,48 +139,53 @@ const App: React.FC = () => {
             ))}
           </nav>
 
-          <div className="flex items-center gap-4">
-             <button 
-               onClick={() => setShowReminders(true)}
-               className="relative w-12 h-12 bg-white border border-gray-100 rounded-2xl flex items-center justify-center text-gray-400 hover:text-blue-600 hover:border-blue-100 transition-all"
-             >
-                <i className="fa-solid fa-bell"></i>
-                {duePlants.length > 0 && (
-                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-blue-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white">
-                    {duePlants.length}
-                  </span>
-                )}
-             </button>
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={() => setShowReminders(true)}
+              className="relative w-12 h-12 bg-white border border-gray-100 rounded-2xl flex items-center justify-center text-gray-400 hover:text-blue-600 hover:border-blue-100 transition-all"
+            >
+              <i className="fa-solid fa-bell"></i>
+              {duePlants.length > 0 && (
+                <span className="absolute -top-1 -right-1 w-5 h-5 bg-blue-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white animate-pulse">
+                  {duePlants.length}
+                </span>
+              )}
+            </button>
           </div>
         </div>
       </header>
 
       {/* Mobile Top Header */}
       <header className="md:hidden bg-white p-4 sticky top-0 z-50 border-b border-emerald-50 flex items-center justify-between">
-         <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center">
-              <i className="fa-solid fa-leaf text-white text-sm"></i>
-            </div>
-            <h1 className="text-lg font-bold text-emerald-900">SproutSage</h1>
+        <button 
+          onClick={() => { setActiveTab(AppTab.HOME); setSelectedPlant(null); }}
+          className="flex items-center gap-2"
+        >
+          <div className="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center">
+            <i className="fa-solid fa-leaf text-white text-sm"></i>
           </div>
-          <div className="flex gap-4">
-             <button 
-               onClick={() => setShowReminders(true)}
-               className="text-gray-400 relative"
-             >
-               <i className="fa-solid fa-bell"></i>
-               {duePlants.length > 0 && (
-                  <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-blue-600 text-white text-[8px] font-bold rounded-full flex items-center justify-center border border-white">
-                    {duePlants.length}
-                  </span>
-                )}
-             </button>
-          </div>
+          <h1 className="text-lg font-bold text-emerald-900">SproutSage</h1>
+        </button>
+        <div className="flex gap-4">
+          <button 
+            onClick={() => setShowReminders(true)}
+            className="text-gray-400 relative"
+          >
+            <i className="fa-solid fa-bell"></i>
+            {duePlants.length > 0 && (
+              <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-blue-600 text-white text-[8px] font-bold rounded-full flex items-center justify-center border border-white animate-pulse">
+                {duePlants.length}
+              </span>
+            )}
+          </button>
+        </div>
       </header>
 
       {/* Main Content Area */}
       <main className="flex-1 overflow-y-auto">
-        {selectedPlant ? (
+        {activeTab === AppTab.HOME ? (
+          <LandingPage onNavigate={setActiveTab} plantCount={savedPlants.length} />
+        ) : selectedPlant ? (
           <div className="max-w-4xl mx-auto px-4 py-8">
             <button 
               onClick={() => setSelectedPlant(null)}
@@ -223,7 +233,7 @@ const App: React.FC = () => {
       </main>
 
       {/* Mobile Bottom Navigation */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-emerald-50 px-2 py-4 flex justify-between items-center z-50 shadow-[0_-10px_20px_rgba(0,0,0,0.05)]">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-emerald-50 px-2 py-3 flex justify-between items-center z-50 shadow-[0_-10px_20px_rgba(0,0,0,0.05)]">
         {[
           { id: AppTab.IDENTIFY, icon: 'fa-camera', label: 'Scan' },
           { id: AppTab.DIAGNOSE, icon: 'fa-stethoscope', label: 'Heal' },

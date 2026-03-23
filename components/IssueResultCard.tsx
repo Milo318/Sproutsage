@@ -9,12 +9,14 @@ interface IssueResultCardProps {
 
 const IssueResultCard: React.FC<IssueResultCardProps> = ({ issue, imageUrl }) => {
   const severityColors = {
-    Low: 'bg-blue-100 text-blue-700',
-    Moderate: 'bg-orange-100 text-orange-700',
-    High: 'bg-red-100 text-red-700',
+    Low: { bg: 'bg-blue-100', text: 'text-blue-700', border: 'border-blue-200', icon: 'fa-circle-info' },
+    Moderate: { bg: 'bg-amber-100', text: 'text-amber-700', border: 'border-amber-200', icon: 'fa-triangle-exclamation' },
+    High: { bg: 'bg-red-100', text: 'text-red-700', border: 'border-red-200', icon: 'fa-circle-exclamation' },
   };
 
-  const categoryIcons = {
+  const severity = severityColors[issue.severity];
+
+  const categoryIcons: Record<string, string> = {
     Pest: 'fa-bug',
     Disease: 'fa-virus',
     'Nutrient Deficiency': 'fa-vial',
@@ -23,47 +25,54 @@ const IssueResultCard: React.FC<IssueResultCardProps> = ({ issue, imageUrl }) =>
 
   return (
     <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-rose-100 transition-all duration-300">
-      <div className="h-64 overflow-hidden relative">
+      <div className="h-64 sm:h-72 overflow-hidden relative">
         <img src={imageUrl} alt={issue.issueName} className="w-full h-full object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
         <div className="absolute bottom-4 left-4 right-4 text-white">
-          <div className="flex items-center gap-2 mb-1">
-            <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${severityColors[issue.severity]}`}>
+          <div className="flex items-center gap-2 mb-2">
+            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider backdrop-blur-md ${severity.bg}/80 ${severity.text}`}>
+              <i className={`fa-solid ${severity.icon}`}></i>
               {issue.severity} Severity
             </span>
           </div>
           <h2 className="text-3xl font-bold">{issue.issueName}</h2>
-          <p className="opacity-90 text-sm font-medium flex items-center gap-2">
-            <i className={`fa-solid ${categoryIcons[issue.category as keyof typeof categoryIcons] || 'fa-triangle-exclamation'}`}></i>
+          <p className="opacity-90 text-sm font-medium flex items-center gap-2 mt-1">
+            <i className={`fa-solid ${categoryIcons[issue.category] || 'fa-triangle-exclamation'}`}></i>
             {issue.category}
           </p>
         </div>
       </div>
 
-      <div className="p-6">
-        <div className="mb-8">
-          <h3 className="text-lg font-bold text-gray-800 mb-2">Diagnosis</h3>
-          <p className="text-gray-600 leading-relaxed">{issue.description}</p>
+      <div className="p-6 space-y-6">
+        {/* Diagnosis */}
+        <div>
+          <h3 className="text-lg font-bold text-gray-800 mb-2 flex items-center gap-2">
+            <i className="fa-solid fa-magnifying-glass text-rose-400 text-sm"></i>
+            Diagnosis
+          </h3>
+          <p className="text-gray-600 leading-relaxed text-sm">{issue.description}</p>
         </div>
 
-        <div className="mb-8">
-          <h4 className="font-bold text-gray-800 mb-3 flex items-center gap-2">
-            <i className="fa-solid fa-list-check text-rose-500"></i>
-            Symptoms
+        {/* Symptoms */}
+        <div>
+          <h4 className="font-bold text-gray-800 mb-3 flex items-center gap-2 text-sm">
+            <i className="fa-solid fa-list-check text-rose-400"></i>
+            Symptoms to Look For
           </h4>
-          <ul className="grid grid-cols-1 md:grid-cols-2 gap-2">
+          <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {issue.symptoms.map((symptom, i) => (
-              <li key={i} className="flex items-start gap-2 text-sm text-gray-600">
-                <i className="fa-solid fa-circle-check text-rose-300 mt-1 text-[10px]"></i>
-                {symptom}
+              <li key={i} className="flex items-start gap-2 text-sm text-gray-600 bg-rose-50/50 p-3 rounded-xl">
+                <i className="fa-solid fa-circle-check text-rose-300 mt-1 text-[10px] shrink-0"></i>
+                <span>{symptom}</span>
               </li>
             ))}
           </ul>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        {/* Treatments */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="p-5 bg-emerald-50 rounded-2xl border border-emerald-100">
-            <h4 className="font-bold text-emerald-900 mb-2 flex items-center gap-2">
+            <h4 className="font-bold text-emerald-900 mb-2 flex items-center gap-2 text-sm">
               <i className="fa-solid fa-leaf text-emerald-500"></i>
               Organic Treatment
             </h4>
@@ -71,7 +80,7 @@ const IssueResultCard: React.FC<IssueResultCardProps> = ({ issue, imageUrl }) =>
           </div>
 
           <div className="p-5 bg-blue-50 rounded-2xl border border-blue-100">
-            <h4 className="font-bold text-blue-900 mb-2 flex items-center gap-2">
+            <h4 className="font-bold text-blue-900 mb-2 flex items-center gap-2 text-sm">
               <i className="fa-solid fa-flask text-blue-500"></i>
               Chemical Treatment
             </h4>
@@ -79,12 +88,13 @@ const IssueResultCard: React.FC<IssueResultCardProps> = ({ issue, imageUrl }) =>
           </div>
         </div>
 
+        {/* Prevention */}
         <div className="bg-slate-50 p-5 rounded-2xl">
-          <h4 className="font-bold text-slate-800 mb-2 flex items-center gap-2">
+          <h4 className="font-bold text-slate-800 mb-2 flex items-center gap-2 text-sm">
             <i className="fa-solid fa-shield-halved text-slate-500"></i>
-            Prevention
+            Prevention Tips
           </h4>
-          <p className="text-sm text-slate-600 italic">{issue.prevention}</p>
+          <p className="text-sm text-slate-600 leading-relaxed">{issue.prevention}</p>
         </div>
       </div>
     </div>
